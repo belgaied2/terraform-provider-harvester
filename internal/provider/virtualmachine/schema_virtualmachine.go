@@ -139,6 +139,14 @@ please use %s instead of this deprecated field:
 			Optional:    true,
 			Default:     false,
 		},
+		constants.FieldVirtualMachineNodeSelector: {
+			Type:        schema.TypeMap,
+			Optional:    true,
+			Description: "Node selector to specify on which nodes the VM should be scheduled",
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
+		},
 	}
 	util.NamespacedSchemaWrap(s, false)
 	return s
