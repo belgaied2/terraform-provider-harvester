@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -333,14 +334,37 @@ func (c *Constructor) Setup() util.Processors {
 			Parser: func(i interface{}) error {
 				nodeSelector := i.(map[string]interface{})
 				if len(nodeSelector) > 0 {
-					nodeSelectorMap := make(map[string]string)
+					vmBuilder.VirtualMachine.Spec.Template.Spec.Affinity = &corev1.Affinity{
+						NodeAffinity: &corev1.NodeAffinity{
+							RequiredDuringSchedulingIgnoredDuringExecution: &corev1.NodeSelector{
+								NodeSelectorTerms: []corev1.NodeSelectorTerm{},
+							},
+						},
+					}
 					for k, v := range nodeSelector {
-						nodeSelectorMap[k] = v.(string)
+						values := []string{}
+						// Check if the value is a comma-separated string
+						if strValue, ok := v.(string); ok && strValue != "" {
+							// Split the string by commas and create a values slice
+							splitValues := strings.Split(strValue, ",")
+							// Trim whitespace from all elements
+							for _, val := range splitValues {
+								values = append(values, strings.TrimSpace(val))
+							}
+						}
+						vmBuilder.VirtualMachine.Spec.Template.Spec.Affinity.NodeAffinity.RequiredDuringSchedulingIgnoredDuringExecution.NodeSelectorTerms = append(
+							vmBuilder.VirtualMachine.Spec.Template.Spec.Affinity.NodeAffinity.RequiredDuringSchedulingIgnoredDuringExecution.NodeSelectorTerms,
+							corev1.NodeSelectorTerm{
+								MatchExpressions: []corev1.NodeSelectorRequirement{
+									{
+										Key:      k,
+										Operator: corev1.NodeSelectorOpIn,
+										Values:   values,
+									},
+								},
+							},
+						)
 					}
-					if vmBuilder.VirtualMachine.Spec.Template.Spec.NodeSelector == nil {
-						vmBuilder.VirtualMachine.Spec.Template.Spec.NodeSelector = make(map[string]string)
-					}
-					vmBuilder.VirtualMachine.Spec.Template.Spec.NodeSelector = nodeSelectorMap
 				}
 				return nil
 			},

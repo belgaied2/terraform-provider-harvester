@@ -14,9 +14,9 @@ RUN curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/i
 
 # The docker version in dapper is too old to have buildx. Install it manually.
 RUN wget --quiet https://github.com/docker/buildx/releases/download/v0.13.1/buildx-v0.13.1.linux-${ARCH} && \
-    wget --quiet https://releases.hashicorp.com/terraform/0.13.4/terraform_0.13.4_linux_${ARCH}.zip &&  \
+    wget --quiet https://releases.hashicorp.com/terraform/1.12.2/terraform_1.12.2_linux_${ARCH}.zip &&  \
     chmod +x buildx-v0.13.1.linux-${ARCH} && \
-    unzip terraform_0.13.4_linux_${ARCH}.zip && \
+    unzip terraform_1.12.2_linux_${ARCH}.zip && \
     mv buildx-v0.13.1.linux-${ARCH} /usr/local/bin/buildx && \
     mv terraform /usr/local/bin/terraform
 
